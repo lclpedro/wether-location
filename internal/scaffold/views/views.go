@@ -1,8 +1,8 @@
 package views
 
 import (
-	"github.com/SpyxBR/spyx-financial-control/internal/financial_control/views/health"
 	"github.com/gofiber/fiber/v2"
+	"github.com/lclpedro/scaffold-golang-fiber/internal/scaffold/views/health"
 )
 
 type AllViews struct {
