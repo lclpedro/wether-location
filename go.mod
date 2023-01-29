@@ -1,4 +1,4 @@
-module github.com/SpyxBR/spyx-financial-control
+module github.com/lclpedro/scaffold-golang-fiber
 
 go 1.19
 
