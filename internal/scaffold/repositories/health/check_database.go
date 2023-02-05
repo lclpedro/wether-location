@@ -1,7 +1,6 @@
 package health
 
 import (
-	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -10,7 +9,6 @@ type healthRepository struct {
 }
 
 func (h *healthRepository) GetDatabaseCheck() error {
-	result, err := h.mysqlConnection.Exec("SELECT now();")
-	fmt.Println(result.RowsAffected())
+	_, err := h.mysqlConnection.Exec("SELECT 1;")
 	return err
 }
