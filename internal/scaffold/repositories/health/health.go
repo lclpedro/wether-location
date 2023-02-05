@@ -1,14 +1,14 @@
 package health
 
 import (
-	"github.com/jmoiron/sqlx"
+	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
 )
 
 type HealthRepository interface {
 	GetDatabaseCheck() error
 }
 
-func NewHealthRepository(dbConnection *sqlx.DB) HealthRepository {
+func NewHealthRepository(dbConnection mysql.Connection) HealthRepository {
 	return &healthRepository{
 		dbConnection: dbConnection,
 	}

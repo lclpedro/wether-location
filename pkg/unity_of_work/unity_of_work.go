@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
 
 	"errors"
 )
@@ -33,9 +34,9 @@ const (
 	ErrorExecCommit   = "UnityOfWork: Error in execute commit transaction. Original Error: %s Commit Error: %s"
 )
 
-func NewUnityOfWork(db *sqlx.DB) *UnityOfWork {
+func NewUnityOfWork(db mysql.Connection) *UnityOfWork {
 	return &UnityOfWork{
-		Db:           db,
+		Db:           db.GetDB(),
 		Repositories: make(map[string]RepositoryFactory),
 	}
 }
