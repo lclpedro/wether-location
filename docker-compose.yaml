@@ -1,0 +1,12 @@
+version: "3.1"
+services:
+    mysql:
+        image: mysql:8.0.25
+        platform: linux/amd64
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_PASSWORD: root
+            MYSQL_DATABASE: scaffold
+            MYSQL_ROOT_HOST: "%"
+        ports:
+            - "3306:3306"

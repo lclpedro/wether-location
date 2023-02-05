@@ -1,11 +1,15 @@
 package health
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+)
 
-type HealthReposotiry interface {
-	GetDatabaseCheck() int
+type HealthRepository interface {
+	GetDatabaseCheck() error
 }
 
-type healthRepository struct {
-	mysqlConnection sqlx.Tx
+func NewHealthRepository(mysqlConnection *sqlx.DB) HealthRepository {
+	return &healthRepository{
+		mysqlConnection: mysqlConnection,
+	}
 }
