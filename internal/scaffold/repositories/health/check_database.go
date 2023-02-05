@@ -5,10 +5,10 @@ import (
 )
 
 type healthRepository struct {
-	mysqlConnection *sqlx.DB
+	dbConnection *sqlx.DB
 }
 
 func (h *healthRepository) GetDatabaseCheck() error {
-	_, err := h.mysqlConnection.Exec("SELECT 1;")
+	_, err := h.dbConnection.Exec("SELECT 1;")
 	return err
 }

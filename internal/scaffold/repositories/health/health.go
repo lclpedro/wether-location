@@ -8,8 +8,8 @@ type HealthRepository interface {
 	GetDatabaseCheck() error
 }
 
-func NewHealthRepository(mysqlConnection *sqlx.DB) HealthRepository {
+func NewHealthRepository(dbConnection *sqlx.DB) HealthRepository {
 	return &healthRepository{
-		mysqlConnection: mysqlConnection,
+		dbConnection: dbConnection,
 	}
 }
