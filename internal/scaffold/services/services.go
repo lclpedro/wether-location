@@ -6,7 +6,7 @@ import (
 )
 
 type AllServices struct {
-	HealthService health.HealthService
+	HealthService health.Service
 }
 
 func NewAllServices(uow uow.UnityOfWorkInterface) *AllServices {

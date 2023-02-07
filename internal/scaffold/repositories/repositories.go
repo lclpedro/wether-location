@@ -8,7 +8,7 @@ import (
 )
 
 type AllRepositories struct {
-	HealthRepository health.HealthRepository
+	HealthRepository health.Repository
 }
 
 func RegistryRepositories(uow uow.UnityOfWorkInterface, dbConnection mysql.Connection) uow.UnityOfWorkInterface {

@@ -7,7 +7,7 @@ import (
 )
 
 type AllViews struct {
-	HealthView health.HealthView
+	HealthView health.View
 }
 
 func newAllViews(services *services.AllServices) *AllViews {

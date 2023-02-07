@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type HealthView interface {
+type View interface {
 	HealthHandler(c *fiber.Ctx) error
 }
 type healthView struct {
-	healthService health.HealthService
+	healthService health.Service
 }
 
-func NewHealthView(healthService health.HealthService) *healthView {
+func NewHealthView(healthService health.Service) View {
 	return &healthView{
 		healthService: healthService,
 	}
