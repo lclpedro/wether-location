@@ -16,8 +16,6 @@ var (
 	ErrConnectionNotNil = errors.New("write connection could not be nil")
 )
 
-const product = "DATABASE"
-
 type Connection interface {
 	Select(dest interface{}, query string, args ...interface{}) error
 	Exec(query string, args ...interface{}) (sql.Result, error)
@@ -77,10 +75,6 @@ func (conn *connection) QueryRow(query string,
 	args ...interface{}) (row *sql.Row) {
 	row = conn.read.QueryRow(query, args...)
 	return
-}
-
-func (conn *connection) DB() *sql.DB {
-	return conn.write.DB
 }
 
 func (conn *connection) Close() error {

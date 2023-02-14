@@ -8,7 +8,7 @@ import (
 
 func InitMySQLConnection(dbConfig *DatabaseConfig, operation string) *sqlx.DB {
 	connectionString := fmt.Sprintf(
-		"%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true",
+		"%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true&autocommit=false",
 		dbConfig.User, dbConfig.Password, dbConfig.Host, dbConfig.DbName,
 	)
 	conn, err := sqlx.Open("mysql", connectionString)

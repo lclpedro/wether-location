@@ -4,11 +4,15 @@ import (
 	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
 )
 
-type HealthRepository interface {
+type Repository interface {
 	GetDatabaseCheck() error
 }
 
-func NewHealthRepository(dbConnection mysql.Connection) HealthRepository {
+type healthRepository struct {
+	dbConnection mysql.Connection
+}
+
+func NewHealthRepository(dbConnection mysql.Connection) Repository {
 	return &healthRepository{
 		dbConnection: dbConnection,
 	}
