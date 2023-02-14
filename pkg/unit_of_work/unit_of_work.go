@@ -10,15 +10,15 @@ import (
 
 type RepositoryFactory func(tx *sqlx.Tx) interface{}
 
-type UnityOfWorkInterface interface {
+type UnitOfWorkInterface interface {
 	Register(name string, repository RepositoryFactory)
 	UnRegister(name string)
 	GetRepository(ctx context.Context, name string) (interface{}, error)
-	Do(ctx context.Context, fn func(uow *UnityOfWork) error) error
+	Do(ctx context.Context, fn func(uow *UnitOfWork) error) error
 	CommitOrRollback() error
 }
 
-type UnityOfWork struct {
+type UnitOfWork struct {
 	ctx          context.Context
 	Db           *sqlx.DB
 	Tx           *sqlx.Tx
@@ -26,20 +26,20 @@ type UnityOfWork struct {
 }
 
 const (
-	ErrorTxExists     = "UnityOfWork: Transaction already exists"
-	ErrorTxNotExists  = "UnityOfWork: No transaction to rollback"
-	ErrorExecRollback = "UnityOfWork: Error in execute rollback transaction. Original Error: %s Rollback Error: %s"
-	ErrorExecCommit   = "UnityOfWork: Error in execute commit transaction. Original Error: %s Commit Error: %s"
+	ErrorTxExists     = "UnitOfWork: Transaction already exists"
+	ErrorTxNotExists  = "UnitOfWork: No transaction to rollback"
+	ErrorExecRollback = "UnitOfWork: Error in execute rollback transaction. Original Error: %s Rollback Error: %s"
+	ErrorExecCommit   = "UnitOfWork: Error in execute commit transaction. Original Error: %s Commit Error: %s"
 )
 
-func NewUnityOfWork(db mysql.Connection) *UnityOfWork {
-	return &UnityOfWork{
+func NewUnitOfWork(db mysql.Connection) *UnitOfWork {
+	return &UnitOfWork{
 		Db:           db.GetDB(),
 		Repositories: make(map[string]RepositoryFactory),
 	}
 }
 
-func (u *UnityOfWork) initTx(ctx context.Context) error {
+func (u *UnitOfWork) initTx(ctx context.Context) error {
 	if u.Tx != nil {
 		return errors.New(ErrorTxExists)
 	}
@@ -51,13 +51,13 @@ func (u *UnityOfWork) initTx(ctx context.Context) error {
 	return nil
 }
 
-func (u *UnityOfWork) Register(name string, repository RepositoryFactory) {
+func (u *UnitOfWork) Register(name string, repository RepositoryFactory) {
 	u.Repositories[name] = repository
 }
-func (u *UnityOfWork) UnRegister(name string) {
+func (u *UnitOfWork) UnRegister(name string) {
 	delete(u.Repositories, name)
 }
-func (u *UnityOfWork) GetRepository(ctx context.Context, name string) (interface{}, error) {
+func (u *UnitOfWork) GetRepository(ctx context.Context, name string) (interface{}, error) {
 	if u.Tx == nil {
 		err := u.initTx(ctx)
 		if err != nil {
@@ -68,7 +68,7 @@ func (u *UnityOfWork) GetRepository(ctx context.Context, name string) (interface
 	return repo, nil
 }
 
-func (u *UnityOfWork) Do(ctx context.Context, fn func(uow *UnityOfWork) error) error {
+func (u *UnitOfWork) Do(ctx context.Context, fn func(uow *UnitOfWork) error) error {
 	err := u.initTx(ctx)
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (u *UnityOfWork) Do(ctx context.Context, fn func(uow *UnityOfWork) error) e
 	return u.CommitOrRollback()
 }
 
-func (u *UnityOfWork) CommitOrRollback() error {
+func (u *UnitOfWork) CommitOrRollback() error {
 	if u.Tx == nil {
 		return errors.New(ErrorTxNotExists)
 	}
@@ -103,7 +103,7 @@ func (u *UnityOfWork) CommitOrRollback() error {
 	return nil
 }
 
-func (u *UnityOfWork) rollback() error {
+func (u *UnitOfWork) rollback() error {
 	if u.Tx == nil {
 		return errors.New(ErrorTxNotExists)
 	}
