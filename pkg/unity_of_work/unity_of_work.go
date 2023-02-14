@@ -2,15 +2,13 @@ package uow
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
-
-	"errors"
 )
 
-type RepositoryFactory func(tx *sql.Tx) interface{}
+type RepositoryFactory func(tx *sqlx.Tx) interface{}
 
 type UnityOfWorkInterface interface {
 	Register(name string, repository RepositoryFactory)
@@ -23,7 +21,7 @@ type UnityOfWorkInterface interface {
 type UnityOfWork struct {
 	ctx          context.Context
 	Db           *sqlx.DB
-	Tx           *sql.Tx
+	Tx           *sqlx.Tx
 	Repositories map[string]RepositoryFactory
 }
 
@@ -45,7 +43,7 @@ func (u *UnityOfWork) initTx(ctx context.Context) error {
 	if u.Tx != nil {
 		return errors.New(ErrorTxExists)
 	}
-	tx, err := u.Db.BeginTx(ctx, nil)
+	tx, err := u.Db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -77,9 +75,9 @@ func (u *UnityOfWork) Do(ctx context.Context, fn func(uow *UnityOfWork) error) e
 	}
 	err = fn(u)
 	if err != nil {
-		if errRoolback := u.rollback(); errRoolback != nil {
+		if errRollback := u.rollback(); errRollback != nil {
 			return errors.New(
-				fmt.Sprintf(ErrorExecRollback, err.Error(), errRoolback.Error()),
+				fmt.Sprintf(ErrorExecRollback, err.Error(), errRollback.Error()),
 			)
 		}
 		return err
@@ -93,9 +91,9 @@ func (u *UnityOfWork) CommitOrRollback() error {
 	}
 	err := u.Tx.Commit()
 	if err != nil {
-		if errRoolback := u.rollback(); errRoolback != nil {
+		if errRollback := u.rollback(); errRollback != nil {
 			return errors.New(
-				fmt.Sprintf(ErrorExecCommit, err.Error(), errRoolback.Error()),
+				fmt.Sprintf(ErrorExecCommit, err.Error(), errRollback.Error()),
 			)
 		}
 		return err
