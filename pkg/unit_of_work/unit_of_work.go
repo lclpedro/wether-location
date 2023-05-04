@@ -16,6 +16,7 @@ type UnitOfWorkInterface interface {
 	GetRepository(ctx context.Context, name string) (interface{}, error)
 	Do(ctx context.Context, fn func(uow *UnitOfWork) error) error
 	CommitOrRollback() error
+	GetDB() *sqlx.Tx
 }
 
 type UnitOfWork struct {
@@ -54,6 +55,11 @@ func (u *UnitOfWork) initTx(ctx context.Context) error {
 func (u *UnitOfWork) Register(name string, repository RepositoryFactory) {
 	u.Repositories[name] = repository
 }
+
+func (u *UnitOfWork) GetDB() *sqlx.Tx {
+	return u.Tx
+}
+
 func (u *UnitOfWork) UnRegister(name string) {
 	delete(u.Repositories, name)
 }
