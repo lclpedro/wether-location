@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
 )
@@ -10,13 +11,12 @@ import (
 type connection struct {
 	read  *sqlx.DB
 	write *sqlx.DB
+	tx    *sql.Tx
 }
 
 var (
 	ErrConnectionNotNil = errors.New("write connection could not be nil")
 )
-
-const product = "DATABASE"
 
 type Connection interface {
 	Select(dest interface{}, query string, args ...interface{}) error
@@ -27,6 +27,8 @@ type Connection interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
 	Close() error
 	GetDB() *sqlx.DB
+	SetTx(tx *sql.Tx)
+	RemoveTx()
 }
 
 func NewConnection(write *sqlx.DB, read *sqlx.DB) (Connection, error) {
@@ -41,9 +43,19 @@ func NewConnection(write *sqlx.DB, read *sqlx.DB) (Connection, error) {
 		write: write,
 	}, nil
 }
+
 func (conn *connection) GetDB() *sqlx.DB {
 	return conn.write
 }
+
+func (conn *connection) SetTx(tx *sql.Tx) {
+	conn.tx = tx
+}
+
+func (conn *connection) RemoveTx() {
+	conn.tx = nil
+}
+
 func (conn *connection) Select(dest interface{}, query string,
 	args ...interface{}) (err error) {
 	err = conn.read.Select(dest, query, args...)
@@ -52,15 +64,21 @@ func (conn *connection) Select(dest interface{}, query string,
 
 func (conn *connection) Exec(query string,
 	args ...interface{}) (result sql.Result, err error) {
-	result, err = conn.write.Exec(query, args...)
+	if conn.tx != nil {
+		result, err = conn.tx.Exec(query, args...)
+	} else {
+		result, err = conn.write.Exec(query, args...)
+	}
 	return
 }
 
 func (conn *connection) NamedExec(query string,
 	arg interface{}) (result sql.Result, err error) {
+
 	result, err = conn.write.NamedExec(query, arg)
 	return
 }
+
 func (conn *connection) NamedQuery(query string,
 	arg interface{}) (row *sqlx.Rows, err error) {
 	row, err = conn.read.NamedQuery(query, arg)
@@ -77,10 +95,6 @@ func (conn *connection) QueryRow(query string,
 	args ...interface{}) (row *sql.Row) {
 	row = conn.read.QueryRow(query, args...)
 	return
-}
-
-func (conn *connection) DB() *sql.DB {
-	return conn.write.DB
 }
 
 func (conn *connection) Close() error {
