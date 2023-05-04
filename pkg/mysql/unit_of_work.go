@@ -1,14 +1,15 @@
-package uow
+package mysql
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
-	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
 )
 
-type RepositoryFactory func(tx *sqlx.Tx) interface{}
+type RepositoryFactory func(tx *sql.Tx) interface{}
 
 type UnitOfWorkInterface interface {
 	Register(name string, repository RepositoryFactory)
@@ -19,9 +20,9 @@ type UnitOfWorkInterface interface {
 }
 
 type UnitOfWork struct {
-	ctx          context.Context
-	Db           *sqlx.DB
-	Tx           *sqlx.Tx
+	DbConnection *sqlx.DB
+	DbFactory    Connection
+	Tx           *sql.Tx
 	Repositories map[string]RepositoryFactory
 }
 
@@ -32,9 +33,10 @@ const (
 	ErrorExecCommit   = "UnitOfWork: Error in execute commit transaction. Original Error: %s Commit Error: %s"
 )
 
-func NewUnitOfWork(db mysql.Connection) *UnitOfWork {
+func NewUnitOfWork(db Connection) *UnitOfWork {
 	return &UnitOfWork{
-		Db:           db.GetDB(),
+		DbConnection: db.GetDB(),
+		DbFactory:    db,
 		Repositories: make(map[string]RepositoryFactory),
 	}
 }
@@ -43,7 +45,7 @@ func (u *UnitOfWork) initTx(ctx context.Context) error {
 	if u.Tx != nil {
 		return errors.New(ErrorTxExists)
 	}
-	tx, err := u.Db.BeginTxx(ctx, nil)
+	tx, err := u.DbConnection.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -73,12 +75,11 @@ func (u *UnitOfWork) Do(ctx context.Context, fn func(uow *UnitOfWork) error) err
 	if err != nil {
 		return err
 	}
+	u.DbFactory.SetTx(u.Tx)
 	err = fn(u)
 	if err != nil {
 		if errRollback := u.rollback(); errRollback != nil {
-			return errors.New(
-				fmt.Sprintf(ErrorExecRollback, err.Error(), errRollback.Error()),
-			)
+			return fmt.Errorf(ErrorExecRollback, err.Error(), errRollback.Error())
 		}
 		return err
 	}
@@ -92,14 +93,13 @@ func (u *UnitOfWork) CommitOrRollback() error {
 	err := u.Tx.Commit()
 	if err != nil {
 		if errRollback := u.rollback(); errRollback != nil {
-			return errors.New(
-				fmt.Sprintf(ErrorExecCommit, err.Error(), errRollback.Error()),
-			)
+			return fmt.Errorf(ErrorExecCommit, err.Error(), errRollback.Error())
 		}
 		return err
 	}
 
 	u.Tx = nil
+	u.DbFactory.RemoveTx()
 	return nil
 }
 
@@ -112,5 +112,6 @@ func (u *UnitOfWork) rollback() error {
 		return err
 	}
 	u.Tx = nil
+	u.DbFactory.RemoveTx()
 	return nil
 }

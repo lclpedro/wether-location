@@ -1,9 +1,10 @@
 package mysql
 
 import (
-	"github.com/spf13/viper"
 	"os"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 const (
@@ -24,15 +25,15 @@ type DatabaseConfig struct {
 func GetDatabaseConfiguration() map[string]*DatabaseConfig {
 	databasesConfig := make(map[string]*DatabaseConfig)
 	operations := [2]string{ReadOperation, WriteOperation}
-	for _, op := range operations {
-		databasesConfig[op] = &DatabaseConfig{
-			User:               viper.GetString("database." + op + ".username"),
-			Host:               os.Getenv(viper.GetString("database." + op + ".hostname")),
-			Password:           os.Getenv(viper.GetString("database." + op + ".password")),
-			DbName:             viper.GetString("database." + op + ".name"),
-			MaxOpenConnections: viper.GetInt("database." + op + ".max_connection_open"),
-			MaxIdleConnections: viper.GetInt("database." + op + ".max_connection_idle"),
-			MaxConnLifetime:    time.Duration(viper.GetInt("database."+op+".max_connection_life_time")) * time.Minute,
+	for _, operation := range operations {
+		databasesConfig[operation] = &DatabaseConfig{
+			User:               viper.GetString("database." + operation + ".username"),
+			Host:               os.Getenv(viper.GetString("database." + operation + ".hostname")),
+			Password:           os.Getenv(viper.GetString("database." + operation + ".password")),
+			DbName:             viper.GetString("database." + operation + ".name"),
+			MaxOpenConnections: viper.GetInt("database." + operation + ".max_connection_open"),
+			MaxIdleConnections: viper.GetInt("database." + operation + ".max_connection_idle"),
+			MaxConnLifetime:    time.Duration(viper.GetInt("database."+operation+".max_connection_life_time")) * time.Minute,
 		}
 	}
 

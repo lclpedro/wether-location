@@ -8,7 +8,6 @@ import (
 	"github.com/lclpedro/scaffold-golang-fiber/internal/scaffold/services"
 	"github.com/lclpedro/scaffold-golang-fiber/internal/scaffold/views"
 	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
-	uow "github.com/lclpedro/scaffold-golang-fiber/pkg/unit_of_work"
 )
 
 func main() {
@@ -22,7 +21,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	uowInstance := uow.NewUnitOfWork(connMysql)
+	uowInstance := mysql.NewUnitOfWork(connMysql)
 	repositories.RegistryRepositories(uowInstance, connMysql)
 	allServices := services.NewAllServices(uowInstance)
 	app = views.NewAllHandlerViews(app, allServices)
