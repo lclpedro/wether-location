@@ -74,7 +74,10 @@ func (conn *connection) Exec(query string,
 
 func (conn *connection) NamedExec(query string,
 	arg interface{}) (result sql.Result, err error) {
-
+	if conn.tx != nil {
+		result, err = conn.tx.NamedExec(query, arg)
+		return
+	}
 	result, err = conn.write.NamedExec(query, arg)
 	return
 }
