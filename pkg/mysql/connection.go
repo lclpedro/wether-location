@@ -19,12 +19,17 @@ var (
 )
 
 type Connection interface {
+	// Query consults
 	Select(dest interface{}, query string, args ...interface{}) error
+	Get(dest interface{}, query string, args ...interface{}) error
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+
+	// Execution
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	NamedExec(query string, arg interface{}) (sql.Result, error)
-	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
-	Get(dest interface{}, query string, args ...interface{}) error
-	QueryRow(query string, args ...interface{}) *sql.Row
+
+	//Manage connection
 	Close() error
 	GetDB() *sqlx.DB
 	SetTx(tx *sqlx.Tx)
