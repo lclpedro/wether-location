@@ -10,6 +10,12 @@ import (
 	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
 )
 
+func checkError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
 	configs.InitConfigs()
 	app := fiber.New()
@@ -18,9 +24,7 @@ func main() {
 	read := mysql.InitMySQLConnection(databaseConfig[mysql.ReadOperation], mysql.ReadOperation)
 	write := mysql.InitMySQLConnection(databaseConfig[mysql.WriteOperation], mysql.WriteOperation)
 	connMysql, err := mysql.NewConnection(write, read)
-	if err != nil {
-		panic(err)
-	}
+	checkError(err)
 	uowInstance := mysql.NewUnitOfWork(connMysql)
 	repositories.RegistryRepositories(uowInstance, connMysql)
 	allServices := services.NewAllServices(uowInstance)

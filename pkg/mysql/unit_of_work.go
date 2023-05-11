@@ -2,14 +2,13 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
 
-type RepositoryFactory func(tx *sql.Tx) interface{}
+type RepositoryFactory func(tx *sqlx.Tx) interface{}
 
 type UnitOfWorkInterface interface {
 	Register(name string, repository RepositoryFactory)
@@ -22,7 +21,7 @@ type UnitOfWorkInterface interface {
 type UnitOfWork struct {
 	DbConnection *sqlx.DB
 	DbFactory    Connection
-	Tx           *sql.Tx
+	Tx           *sqlx.Tx
 	Repositories map[string]RepositoryFactory
 }
 
@@ -45,7 +44,7 @@ func (u *UnitOfWork) initTx(ctx context.Context) error {
 	if u.Tx != nil {
 		return errors.New(ErrorTxExists)
 	}
-	tx, err := u.DbConnection.BeginTx(ctx, nil)
+	tx, err := u.DbConnection.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}

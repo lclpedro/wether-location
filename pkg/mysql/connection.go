@@ -11,7 +11,7 @@ import (
 type connection struct {
 	read  *sqlx.DB
 	write *sqlx.DB
-	tx    *sql.Tx
+	tx    *sqlx.Tx
 }
 
 var (
@@ -27,7 +27,7 @@ type Connection interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
 	Close() error
 	GetDB() *sqlx.DB
-	SetTx(tx *sql.Tx)
+	SetTx(tx *sqlx.Tx)
 	RemoveTx()
 }
 
@@ -48,7 +48,7 @@ func (conn *connection) GetDB() *sqlx.DB {
 	return conn.write
 }
 
-func (conn *connection) SetTx(tx *sql.Tx) {
+func (conn *connection) SetTx(tx *sqlx.Tx) {
 	conn.tx = tx
 }
 
