@@ -1,16 +1,18 @@
 package services
 
 import (
-	"github.com/lclpedro/scaffold-golang-fiber/internal/scaffold/services/health"
-	"github.com/lclpedro/scaffold-golang-fiber/pkg/mysql"
+	"github.com/lclpedro/weather-location/internal/scaffold/services/health"
+	weatherlocation "github.com/lclpedro/weather-location/internal/scaffold/services/weather_location"
 )
 
 type AllServices struct {
-	HealthService health.Service
+	HealthService          health.Service
+	WeatherLocationService weatherlocation.Service
 }
 
-func NewAllServices(uow mysql.UnitOfWorkInterface) *AllServices {
+func NewAllServices() *AllServices {
 	return &AllServices{
-		HealthService: health.NewHealthService(uow),
+		HealthService:          health.NewHealthService(),
+		WeatherLocationService: weatherlocation.NewService(),
 	}
 }

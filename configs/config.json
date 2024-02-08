@@ -1,22 +1,19 @@
 {
-  "database": {
-    "read": {
-      "username": "root",
-      "password": "DB_PASSWORD",
-      "hostname": "DB_HOSTNAME",
-      "name": "scaffold",
-      "max_connection_open": 2,
-      "max_connection_idle": 2,
-      "max_connection_life_time": 30
-    },
-    "write": {
-      "username": "root",
-      "password": "DB_PASSWORD",
-      "hostname": "DB_HOSTNAME",
-      "name": "scaffold",
-      "max_connection_open": 2,
-      "max_connection_idle": 2,
-      "max_connection_life_time": 30
+  "application":{
+    "clients":{
+      "viacep":{
+        "base_url":"https://viacep.com.br/ws",
+        "timeout":{
+          "ms":600
+        } 
+      },
+      "weather":{
+        "base_url":"https://api.weatherapi.com/v1",
+        "timeout":{
+          "ms":10000
+        },
+        "api_key":"WEATHER_API_TOKEN"
+      }
     }
   }
 }

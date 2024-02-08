@@ -2,8 +2,7 @@ package health
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/lclpedro/scaffold-golang-fiber/internal/scaffold/services/health"
-	"net/http"
+	"github.com/lclpedro/weather-location/internal/scaffold/services/health"
 )
 
 type View interface {
@@ -20,10 +19,5 @@ func NewHealthView(healthService health.Service) View {
 }
 
 func (v healthView) HealthHandler(c *fiber.Ctx) error {
-	err := v.healthService.Ping(c.Context())
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return c.JSON(fiber.Map{"message": "Application with error running..", "error": err.Error()})
-	}
-	return c.JSON(fiber.Map{"message": "Application running..", "error": nil})
+	return c.JSON(fiber.Map{"message": "Application running..", "context": v.healthService.Ping(c.Context())})
 }
