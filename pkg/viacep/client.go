@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/lclpedro/weather-location/pkg/requester"
 	"github.com/spf13/viper"
 )
 
@@ -16,7 +16,7 @@ type (
 	}
 	client struct {
 		BaseURL   string
-		TimeoutMS int
+		Requester requester.Client
 	}
 
 	Response struct {
@@ -26,15 +26,18 @@ type (
 		Bairro      string `json:"bairro"`
 		Localidade  string `json:"localidade"`
 		Uf          string `json:"uf"`
+		Err         bool   `json:"erro"`
 	}
 )
 
-func NewClient(configs *viper.Viper) Client {
+const ViaCEPTimeout = "application.clients.viacep.timeout.ms"
+
+func NewClient(requester requester.Client) Client {
 	baseURL := viper.GetString("application.clients.viacep.base_url")
-	timeout := viper.GetInt("application.clients.viacep.timeout.ms")
+
 	return &client{
 		BaseURL:   baseURL,
-		TimeoutMS: timeout,
+		Requester: requester,
 	}
 }
 
@@ -52,8 +55,8 @@ func (c *client) GetAddress(cep string) (Response, error) {
 		fmt.Println("viacep: invalid zipcode")
 		return Response{}, ErrInvalidCep
 	}
-	http.DefaultClient.Timeout = time.Duration(c.TimeoutMS) * time.Millisecond
-	response, err := http.Get(fmt.Sprintf("%s/%s/json", c.BaseURL, cep))
+
+	response, err := c.Requester.Get(fmt.Sprintf("%s/%s/json", c.BaseURL, cep))
 	if err != nil {
 		return Response{}, err
 	}
@@ -66,6 +69,10 @@ func (c *client) GetAddress(cep string) (Response, error) {
 	err = json.NewDecoder(response.Body).Decode(&resp)
 	if err != nil {
 		return Response{}, err
+	}
+
+	if resp.Err {
+		return Response{}, ErrNotFound
 	}
 
 	return resp, nil

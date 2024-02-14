@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	weatherlocation "github.com/lclpedro/weather-location/internal/scaffold/services/weather_location"
+	"github.com/lclpedro/weather-location/pkg/requester"
 	"github.com/lclpedro/weather-location/pkg/viacep"
 	weatherClient "github.com/lclpedro/weather-location/pkg/weather"
 	"github.com/spf13/viper"
@@ -29,13 +30,15 @@ func NewView(weatherLocationService weatherlocation.Service) View {
 func (v *view) WeatherLocationHandler(c *fiber.Ctx) error {
 	cep := c.Params("cep")
 
+	requesterViaCep := requester.NewRequester(v.Configs.GetInt(viacep.ViaCEPTimeout))
+	requesterWeather := requester.NewRequester(v.Configs.GetInt(weatherClient.WeatherAPITimeout))
+
 	v.WeatherLocationService.SetClients(
-		viacep.NewClient(v.Configs),
-		weatherClient.NewClient(v.Configs),
+		viacep.NewClient(requesterViaCep),
+		weatherClient.NewClient(requesterWeather),
 	)
 
 	weather, err := v.WeatherLocationService.GetWeatherLocation(cep)
-
 	if errors.Is(err, viacep.ErrInvalidCep) {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
 	}
