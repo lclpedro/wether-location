@@ -39,3 +39,12 @@ services:
             - jaeager-all-in-one
             - phometheus
             - otel-collector
+
+    app-tests:
+        build:
+            dockerfile: Dockerfile.tests
+            context: .
+        volumes:
+          - .:/app
+        environment:
+            WEATHER_API_TOKEN: "api-token-mocked"

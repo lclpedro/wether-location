@@ -1,7 +1,6 @@
 package viacep
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +12,7 @@ import (
 
 type (
 	Client interface {
-		GetAddress(ctx context.Context, cep string) (Response, error)
+		GetAddress(cep string) (Response, error)
 	}
 	client struct {
 		BaseURL   string
@@ -51,7 +50,7 @@ func (c *client) cepIsValid(cep string) bool {
 	return len(cep) == 8
 }
 
-func (c *client) GetAddress(ctx context.Context, cep string) (Response, error) {
+func (c *client) GetAddress(cep string) (Response, error) {
 	if !c.cepIsValid(cep) {
 		fmt.Println("viacep: invalid zipcode")
 		return Response{}, ErrInvalidCep

@@ -1,12 +1,9 @@
 package weatherlocation
 
 import (
-	"context"
 	"errors"
 	"github.com/lclpedro/weather-location/pkg/clients/viacep"
 	weatherClient "github.com/lclpedro/weather-location/pkg/clients/weather"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,23 +22,16 @@ type View interface {
 	WeatherLocationHandler(*fiber.Ctx) error
 }
 
-func NewView(tracer trace.Tracer, weatherLocationService weatherlocation.Service) View {
+func NewView(weatherLocationService weatherlocation.Service) View {
 	return &view{
 		WeatherLocationService: weatherLocationService,
 		Configs:                viper.GetViper(),
-		Tracer:                 tracer,
 	}
 }
 
 func (v *view) WeatherLocationHandler(c *fiber.Ctx) error {
-	carrier := propagation.HeaderCarrier(c.GetReqHeaders())
-	ctx := context.Background()
-	ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
-	ctx, spam := v.Tracer.Start(ctx, "weather-location-api")
-	defer spam.End()
-
-	requesterViaCep := requester.NewRequester(ctx, v.Tracer, v.Configs.GetInt(viacep.ViaCEPTimeout))
-	requesterWeather := requester.NewRequester(ctx, v.Tracer, v.Configs.GetInt(weatherClient.WeatherAPITimeout))
+	requesterViaCep := requester.NewRequester(v.Configs.GetInt(viacep.ViaCEPTimeout))
+	requesterWeather := requester.NewRequester(v.Configs.GetInt(weatherClient.WeatherAPITimeout))
 
 	v.WeatherLocationService.SetClients(
 		viacep.NewClient(requesterViaCep),
@@ -49,7 +39,7 @@ func (v *view) WeatherLocationHandler(c *fiber.Ctx) error {
 	)
 
 	cep := c.Params("cep")
-	weather, err := v.WeatherLocationService.GetWeatherLocation(ctx, cep)
+	weather, err := v.WeatherLocationService.GetWeatherLocation(cep)
 	if errors.Is(err, viacep.ErrInvalidCep) {
 		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
 	}

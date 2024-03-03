@@ -1,7 +1,6 @@
 package weatherlocation
 
 import (
-	"context"
 	"github.com/lclpedro/weather-location/internal/scaffold/domains"
 	viaCepClient "github.com/lclpedro/weather-location/pkg/clients/viacep"
 	weatherAPIClient "github.com/lclpedro/weather-location/pkg/clients/weather"
@@ -9,7 +8,7 @@ import (
 )
 
 type Service interface {
-	GetWeatherLocation(ctx context.Context, cep string) (Output, error)
+	GetWeatherLocation(cep string) (Output, error)
 	SetClients(viaCepClient viaCepClient.Client, weatherClient weatherAPIClient.Client)
 }
 
@@ -29,10 +28,8 @@ type Output struct {
 	LastUpdate string  `json:"last_update"`
 }
 
-func NewService(trace trace.Tracer) Service {
-	return &service{
-		trace: trace,
-	}
+func NewService() Service {
+	return &service{}
 }
 
 func (s *service) SetClients(viacepClient viaCepClient.Client, weatherClient weatherAPIClient.Client) {
@@ -40,9 +37,9 @@ func (s *service) SetClients(viacepClient viaCepClient.Client, weatherClient wea
 	s.weatherClient = weatherClient
 }
 
-func (s *service) GetWeatherLocation(ctx context.Context, cep string) (Output, error) {
+func (s *service) GetWeatherLocation(cep string) (Output, error) {
 
-	address, err := s.viaCepClient.GetAddress(ctx, cep)
+	address, err := s.viaCepClient.GetAddress(cep)
 	if err != nil {
 		return Output{}, err
 	}
