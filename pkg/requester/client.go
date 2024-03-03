@@ -3,7 +3,6 @@ package requester
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -42,6 +41,5 @@ func (r *requester) Get(url string) (*http.Response, error) {
 	}
 
 	otel.GetTextMapPropagator().Inject(r.ctx, propagation.HeaderCarrier(req.Header))
-	fmt.Println(req.Header)
 	return r.client.Do(req)
 }
