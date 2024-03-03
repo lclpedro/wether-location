@@ -12,7 +12,7 @@ export WEATHER_API_TOKEN=<API_KEY>
 Após isso para inicializar a aplicação é muito simples, basta você executar o seguinte comando.
 
 ```sh
-docker-compose up app 
+docker-compose up
 ```
 Isso estará funcionando na porta :8080 do seu localhost.
 

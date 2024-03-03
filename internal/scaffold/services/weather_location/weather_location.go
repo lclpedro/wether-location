@@ -1,19 +1,22 @@
 package weatherlocation
 
 import (
+	"context"
 	"github.com/lclpedro/weather-location/internal/scaffold/domains"
-	"github.com/lclpedro/weather-location/pkg/viacep"
-	"github.com/lclpedro/weather-location/pkg/weather"
+	viaCepClient "github.com/lclpedro/weather-location/pkg/clients/viacep"
+	weatherAPIClient "github.com/lclpedro/weather-location/pkg/clients/weather"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type Service interface {
-	GetWeatherLocation(cep string) (Output, error)
-	SetClients(viacepClient viacep.Client, weatherClient weather.Client)
+	GetWeatherLocation(ctx context.Context, cep string) (Output, error)
+	SetClients(viaCepClient viaCepClient.Client, weatherClient weatherAPIClient.Client)
 }
 
 type service struct {
-	weatherClient weather.Client
-	viacepClient  viacep.Client
+	weatherClient weatherAPIClient.Client
+	viaCepClient  viaCepClient.Client
+	trace         trace.Tracer
 }
 
 type Output struct {
@@ -26,17 +29,20 @@ type Output struct {
 	LastUpdate string  `json:"last_update"`
 }
 
-func NewService() Service {
-	return &service{}
+func NewService(trace trace.Tracer) Service {
+	return &service{
+		trace: trace,
+	}
 }
 
-func (s *service) SetClients(viacepClient viacep.Client, weatherClient weather.Client) {
-	s.viacepClient = viacepClient
+func (s *service) SetClients(viacepClient viaCepClient.Client, weatherClient weatherAPIClient.Client) {
+	s.viaCepClient = viacepClient
 	s.weatherClient = weatherClient
 }
 
-func (s *service) GetWeatherLocation(cep string) (Output, error) {
-	address, err := s.viacepClient.GetAddress(cep)
+func (s *service) GetWeatherLocation(ctx context.Context, cep string) (Output, error) {
+
+	address, err := s.viaCepClient.GetAddress(ctx, cep)
 	if err != nil {
 		return Output{}, err
 	}

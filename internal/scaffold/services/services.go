@@ -2,17 +2,18 @@ package services
 
 import (
 	"github.com/lclpedro/weather-location/internal/scaffold/services/health"
-	weatherlocation "github.com/lclpedro/weather-location/internal/scaffold/services/weather_location"
+	weatherLocation "github.com/lclpedro/weather-location/internal/scaffold/services/weather_location"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type AllServices struct {
 	HealthService          health.Service
-	WeatherLocationService weatherlocation.Service
+	WeatherLocationService weatherLocation.Service
 }
 
-func NewAllServices() *AllServices {
+func NewAllServices(trace trace.Tracer) *AllServices {
 	return &AllServices{
 		HealthService:          health.NewHealthService(),
-		WeatherLocationService: weatherlocation.NewService(),
+		WeatherLocationService: weatherLocation.NewService(trace),
 	}
 }
