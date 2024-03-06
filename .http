@@ -1,0 +1,9 @@
+### API VIA CEP
+GET https://viacep.com.br/ws/01153001/json/
+
+### LOCAL API
+GET http://localhost:8080/weather/00000000
+
+
+### CLOUD RUN API
+GET https://weather-location-api-amhi2bavhq-uc.a.run.app/weather/01153001

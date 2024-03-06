@@ -23,9 +23,10 @@ docker-compose up app-tests --build
 
 Isso estará funcionando na porta :8080 do seu localhost.
 
-PS: Com relação ao endpoint de serviço, ainda não disponibilizei porque não tenho mais freetier na AWS e GCP, deixei uma dúvida no canal administrativo do discord, pergunta se posso subir em outros serviços.
-
 ### Documentação de Endpoint
 URL /weather/:cep
 parametro: CEP da sua localidade
+
+#### Acesso do cloud run
+https://weather-location-api-amhi2bavhq-uc.a.run.app/weather/<CEP>
 
