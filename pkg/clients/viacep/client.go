@@ -69,7 +69,7 @@ func (c *client) GetAddress(ctx context.Context, cep string) (Response, error) {
 	var resp Response
 	err = json.NewDecoder(response.Body).Decode(&resp)
 	if err != nil {
-		return Response{}, err
+		return Response{}, ErrNotFound
 	}
 
 	if resp.Err {
