@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"time"
+
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -16,7 +18,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"time"
 )
 
 func initProvider(serviceName, collectorEndpoint string) *sdktrace.TracerProvider {
@@ -29,7 +30,7 @@ func initProvider(serviceName, collectorEndpoint string) *sdktrace.TracerProvide
 		log.Fatal("Error to mount resource service", err)
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
 	conn, err := grpc.DialContext(
@@ -45,7 +46,7 @@ func initProvider(serviceName, collectorEndpoint string) *sdktrace.TracerProvide
 
 	traceExporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
 	if err != nil {
-
+		log.Fatal("Error to create trace exporter", err)
 	}
 
 	bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
