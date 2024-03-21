@@ -3,11 +3,12 @@ package requester
 import (
 	"context"
 	"crypto/tls"
+	"net/http"
+	"time"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
-	"net/http"
-	"time"
 )
 
 type (

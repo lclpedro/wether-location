@@ -24,5 +24,6 @@ func NewAllHandlerViews(app *fiber.App, tracer trace.Tracer, services *services.
 	views := newAllViews(services, tracer)
 	app.Get("/health", views.HealthView.HealthHandler)
 	app.Get("/weather/:cep", views.WeatherView.WeatherLocationHandler)
+	app.Post("/weather", views.WeatherView.WeatherLocationPostHandler)
 	return app
 }

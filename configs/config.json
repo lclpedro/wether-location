@@ -4,15 +4,21 @@
       "viacep":{
         "base_url":"https://viacep.com.br/ws",
         "timeout":{
-          "ms":100000
+          "ms":10000
         } 
       },
       "weather":{
         "base_url":"https://api.weatherapi.com/v1",
         "timeout":{
-          "ms":100000
+          "ms":10000
         },
         "api_key":"WEATHER_API_TOKEN"
+      },
+      "recursiveapi":{
+        "base_url":"http://localhost:8080",
+        "timeout":{
+          "ms":10000
+        }
       }
     }
   }

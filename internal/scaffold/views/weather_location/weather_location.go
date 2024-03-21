@@ -2,7 +2,11 @@ package weatherlocation
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+
+	recursiveapi "github.com/lclpedro/weather-location/pkg/clients/recursive-api"
 	"github.com/lclpedro/weather-location/pkg/clients/viacep"
 	weatherClient "github.com/lclpedro/weather-location/pkg/clients/weather"
 	"go.opentelemetry.io/otel"
@@ -23,6 +27,7 @@ type view struct {
 
 type View interface {
 	WeatherLocationHandler(*fiber.Ctx) error
+	WeatherLocationPostHandler(*fiber.Ctx) error
 }
 
 func NewView(tracer trace.Tracer, weatherLocationService weatherlocation.Service) View {
@@ -62,4 +67,52 @@ func (v *view) WeatherLocationHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(weather)
+}
+
+type location struct {
+	Cep string `json:"cep"`
+}
+
+func (v *view) WeatherLocationPostHandler(c *fiber.Ctx) error {
+	carrier := propagation.HeaderCarrier(c.GetReqHeaders())
+	ctx := context.Background()
+	ctx = otel.GetTextMapPropagator().Extract(ctx, carrier)
+	ctx, spam := v.Tracer.Start(ctx, "weather-location-recursive-api")
+	defer spam.End()
+
+	var location location
+	err := json.Unmarshal(c.Body(), &location)
+	if err != nil {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	if location.Cep == "" || len(location.Cep) != 8 {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": "Invalid CEP"})
+	}
+
+	_requester := requester.NewRequester(ctx, v.Tracer, v.Configs.GetInt(recursiveapi.Timeout))
+	client := recursiveapi.NewClient(_requester)
+
+	response, err := client.GetWeatherLocation(ctx, location.Cep)
+	fmt.Println(response)
+	fmt.Println(err)
+
+	if errors.Is(err, recursiveapi.ErrInvalidCep) {
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	if errors.Is(err, recursiveapi.ErrNotFoundAddress) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{
+		"city":   response.City,
+		"temp_C": response.Temp_C,
+		"temp_F": response.Temp_F,
+		"temp_K": response.Temp_K,
+	})
 }

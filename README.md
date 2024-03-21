@@ -17,6 +17,16 @@ docker-compose up
 Isso estará funcionando na porta :8080 do seu localhost.
 
 ### Documentação de Endpoint
-URL /weather/:cep
+GET /weather/:cep
 parametro: CEP da sua localidade
+
+
+POST /weather
+
+{
+    "cep":"1234567890"
+}
+
+### Analitycs Tracing with Jaeger
+Acesse: http://localhost:16686
 
