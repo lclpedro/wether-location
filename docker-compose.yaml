@@ -1,19 +1,10 @@
 version: "3.1"
 services:
-    jaeager-all-in-one:
-        image: jaegertracing/all-in-one:latest
-        restart: always
+    zipkin:
+        image: openzipkin/zipkin
         ports:
-            - "16686:16686"
-            - "14268"
-            - "14250"
-    phometheus:
-        image: prom/prometheus:latest
-        restart: always
-        volumes:
-            - ./.docker/prometheus.yaml:/etc/prometheus/prometheus.yaml
-        ports:
-            - "9090:9090"
+        - "9411:9411"
+            
     otel-collector:
         image: otel/opentelemetry-collector:latest
         restart: always
@@ -36,6 +27,5 @@ services:
         dns:
             - 8.8.8.8
         depends_on:
-            - jaeager-all-in-one
-            - phometheus
+            - zipkin
             - otel-collector
