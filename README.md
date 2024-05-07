@@ -27,6 +27,6 @@ POST /weather
     "cep":"1234567890"
 }
 
-### Analitycs Tracing with Jaeger
-Acesse: http://localhost:16686
+### Analitycs Tracing with Zipkin
+Acesse: http://localhost:9411
 
